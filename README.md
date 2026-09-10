@@ -1,16 +1,11 @@
-# hw2
-A.I. Hands On - 2nd Assignment
-
-Subject: Conversational AI Agent for Student Dropout Prediction  
-Name: Archontia Chalkidi  
-ID: 09325028
+# Conversational AI Agent for Student Dropout Prediction
 
 ## 1. System Overview
 
 This project implements a domain-aware conversational AI agent that combines a Retrieval-Augmented Generation (RAG) system with the trained machine learning model from HW1. The agent can answer natural language questions about student dropout and make predictions for individual student profiles. It is built using LangGraph, LangChain, and FastAPI, and is powered by the Google Gemini API.
 
 **Domain:** Student Dropout Prediction  
-**Best model from HW1:** Random Forest Classifier
+**Best model:** Random Forest Classifier
 
 ---
 
@@ -24,7 +19,7 @@ The agent is built with LangGraph and has access to three tools:
 | `predict_dropout` | Uses the HW1 Random Forest model to predict dropout probability for a given student profile |
 | `dataset_statistics` | Returns summary statistics for any numerical column in the HW1 dataset |
 
-As a bonus feature (Task 5), I chose to implement the **dataset_statistics** tool, as I considered it the most useful addition for the student dropout domain. This tool provides key insights into the dataset, helping users better understand the data distribution and the factors that may influence dropout predictions.
+I have also implemented the **dataset_statistics** tool, as I considered it the most useful addition for the student dropout domain. This tool provides key insights into the dataset, helping users better understand the data distribution and the factors that may influence dropout predictions.
 
 ### LangGraph Graph Structure
 
@@ -63,9 +58,9 @@ The RAG system can answer questions such as:
 
 ---
 
-## 4. HW1 Model Integration
+## 4. Student Dropout Prediction Model Integration
 
-The prediction tool wraps the **Random Forest Classifier** trained in HW1. It loads `models/best_model.pkl` and `models/scaler.pkl` and applies the exact same preprocessing pipeline:
+The prediction tool wraps the **Random Forest Classifier** trained in the Student Dropout Prediction repository. It loads `models/best_model.pkl` and `models/scaler.pkl` and applies the exact same preprocessing pipeline:
 
 - **Feature Engineering:** Creates `study_attendance_ratio` and `stress_gpa_ratio` features
 - **One-Hot Encoding:** Encodes categorical features
