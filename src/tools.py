@@ -68,27 +68,41 @@ def retrieve_information(query: str) -> str:
 @tool
 def dataset_statistics(column_name: str) -> str:
     """
-    Returns summary statistics for a numerical column in the student dropout dataset.
-    Input: column name as a string (e.g. 'GPA', 'Attendance_Rate', 'Stress_Index', 'Study_Hours_per_Day', 'Age').
-    Use this when the user asks about average, median, min, max, or distribution of a specific feature.
+    Returns summary statistics for any column of the student dropout dataset.
+    Input: column name as a string (e.g. 'GPA', 'Attendance_Rate', 'Stress_Index', 'Gender').
+    For numerical columns it returns mean, median, std, min and max, overall and split by dropout status.
+    For categorical columns (e.g. Gender) it returns the percentage of each category
+    and the dropout rate within each category.
+    Use this when the user asks about averages, distributions, percentages or class balance in the dataset.
     """
     try:
         df = pd.read_csv("data/dataset.csv")
-        
+
+        # Handle unknown column names
         if column_name not in df.columns:
-            available = [col for col in df.columns if df[col].dtype in ['float64', 'int64']]
-            return f"Column '{column_name}' not found. Available numerical columns: {', '.join(available)}"
-        
+            return f"Column '{column_name}' not found. Available columns: {', '.join(df.columns)}"
+
         col = df[column_name]
         dropout_mask = df["Dropout"] == 1
-        
-        stats = f"""Statistics for '{column_name}':
+
+        # Categorical column: category percentages and dropout rate per category
+        if not pd.api.types.is_numeric_dtype(col):
+            shares = col.value_counts(normalize=True) * 100
+            dropout_rates = df.groupby(column_name)["Dropout"].mean() * 100
+            lines = [f"Distribution of '{column_name}' (n={len(df)}):"]
+            for category, pct in shares.items():
+                lines.append(
+                    f"- {category}: {pct:.1f}% of students, dropout rate {dropout_rates[category]:.1f}%"
+                )
+            lines.append(f"- Overall dropout rate in dataset: {dropout_mask.mean():.1%}")
+            return "\n".join(lines)
+
+        # Numerical column: summary statistics overall and by dropout status
+        return f"""Statistics for '{column_name}':
 - Overall: mean={col.mean():.2f}, median={col.median():.2f}, std={col.std():.2f}, min={col.min():.2f}, max={col.max():.2f}
 - Dropout students: mean={col[dropout_mask].mean():.2f}, median={col[dropout_mask].median():.2f}
 - Non-dropout students: mean={col[~dropout_mask].mean():.2f}, median={col[~dropout_mask].median():.2f}
 - Overall dropout rate in dataset: {dropout_mask.mean():.1%}"""
-        
-        return stats
-    
+
     except Exception as e:
         return f"Error: {str(e)}"

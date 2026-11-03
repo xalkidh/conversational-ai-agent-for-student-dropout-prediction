@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from typing import TypedDict, Annotated
 import operator
 
@@ -63,9 +63,19 @@ def create_agent():
 
 agent = create_agent()
 
+SYSTEM_PROMPT = (
+    "You are an assistant for student dropout analysis. "
+    "Always reply in the same language as the user's latest message (English or Greek). "
+    "Use the available tools when needed."
+)
+
 def run_agent(message: str, history: list = []):
+    # Add the system prompt only at the start of a session
+    if not history:
+        history = [SystemMessage(content=SYSTEM_PROMPT)]
     messages = history + [HumanMessage(content=message)]
     result = agent.invoke({"messages": messages})
+
     last_message = result["messages"][-1]
     content = last_message.content
     if isinstance(content, list):
